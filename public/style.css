@@ -27,3 +27,7 @@
 }
 @media(max-width:350px){.hero{gap:18px 14px}.stores{gap:10px}.stores img.apple{max-height:37px}.stores img.google{max-height:50px}.footer{font-size:9px;min-height:62px}.available{font-size:8px}}
 @media(max-width:599px) and (max-height:500px){.hero{padding:10px 0;row-gap:14px}.footer{min-height:54px;padding:8px 0;font-size:9px;gap:5px}.available{display:none}.phone{width:min(36vw,calc((100dvh - 230px)*.43))}.search-label{font-size:12px;margin-bottom:7px}.trigger-arrow{height:38px;width:38px}.stores{gap:8px}.stores a{min-height:36px}.stores img.apple{max-height:34px}.stores img.google{max-height:46px}}
+
+.footer{justify-content:center;align-items:center;min-height:0}.powered-by{display:inline-flex;align-items:center;gap:4px;font-size:10px;line-height:1.5;color:var(--muted)}.powered-by strong{font-weight:650;color:#514e48}.powered-by:hover strong{text-decoration:underline}@media(max-width:599px){.footer{height:44px;min-height:44px;padding:10px 0;flex-direction:row;gap:0}}
+
+.demo-note{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin:-3px 0 8px}

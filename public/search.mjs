@@ -4,7 +4,7 @@ export function normalizeHits(payload, scope) {
   return hits.filter(h => h && typeof h.title === 'string' && ['athlete', 'event'].includes(h.type) && h.availability === 'available_in_app' && (scope === 'events' ? h.type === 'event' : h.type === 'athlete')).slice(0, 6);
 }
 export function queryUrl(endpoint, query, scope) {
-  const url = new URL(endpoint);
+  const url = new URL(endpoint, globalThis.location?.origin || 'http://localhost:4174');
   url.searchParams.set('q', query.trim());
   url.searchParams.set('scope', scope);
   return url;
