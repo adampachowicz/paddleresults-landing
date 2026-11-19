@@ -1,6 +1,7 @@
 import { searchMessages } from './locales.mjs';
 import { searchDirectory, eventDetails, flagAsset, detectDevice, resultDestination } from './search.mjs';
 import { storeLinks } from './links.mjs';
+import { searchViewport } from './viewport.mjs';
 const dialog = document.querySelector('#search-dialog');
 const opener = document.querySelector('#open-search');
 const closer = document.querySelector('#close-search');
@@ -15,6 +16,23 @@ const t = searchMessages[locale] || searchMessages.en;
 const device = detectDevice(navigator);
 const stores = storeLinks(locale, 'search');
 let timer, controller, generation = 0, cachedQuery = null, cachedScopes = null, cachedAt = 0, discipline = '';
+let viewportReference = window.innerHeight;
+let viewportFrame;
+function syncViewport() {
+ cancelAnimationFrame(viewportFrame);
+ viewportFrame = requestAnimationFrame(() => {
+  if (!dialog?.open) return;
+  const viewport = window.visualViewport;
+  const state = searchViewport({height:viewport?.height ?? window.innerHeight,offsetTop:viewport?.offsetTop ?? 0,scale:viewport?.scale ?? 1,referenceHeight:Math.max(viewportReference,window.innerHeight),focused:document.activeElement===field});
+  if (!state) return;
+  dialog.style.setProperty('--search-viewport-height',`${state.height}px`);
+  dialog.style.setProperty('--search-viewport-top',`${state.top}px`);
+  dialog.dataset.keyboard = String(state.keyboard);
+ });
+}
+window.visualViewport?.addEventListener('resize',syncViewport);
+window.visualViewport?.addEventListener('scroll',syncViewport);
+window.addEventListener('resize',syncViewport);
 const flagBase = new URL('./', import.meta.url);
 function updateCounts(data) {
  for (const node of document.querySelectorAll('[data-count]')) {
@@ -75,8 +93,10 @@ async function search() {
   }
 }
 function openSearch() {
+  viewportReference = window.innerHeight;
   if (!dialog.open) dialog.showModal();
   field.focus({preventScroll:true});
+  syncViewport();
 }
 function chooseScope(value) {
   scope.value = value;
@@ -88,8 +108,10 @@ function chooseDiscipline(value) {
 }
 if (form && field && scope && dialog && opener && closer) {
   opener.addEventListener('click', openSearch);
+  field.addEventListener('focus',syncViewport);
+  field.addEventListener('blur',syncViewport);
   closer.addEventListener('click', () => dialog.close());
-  dialog.addEventListener('close', () => { cachedScopes = null; invalidate(); opener.focus({preventScroll:true}); });
+  dialog.addEventListener('close', () => { cancelAnimationFrame(viewportFrame); delete dialog.dataset.keyboard; dialog.style.removeProperty('--search-viewport-height'); dialog.style.removeProperty('--search-viewport-top'); cachedScopes = null; invalidate(); opener.focus({preventScroll:true}); });
   dialog.addEventListener('click', event => {
     if (event.target !== dialog) return;
     const rect = dialog.getBoundingClientRect();
