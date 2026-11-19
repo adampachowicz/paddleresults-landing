@@ -35,3 +35,16 @@ test('result links select iOS, Android or a real PaddleStats web search', async 
   assert.equal(link.searchParams.get('utm_content'),`ios_${placement}_${locale}`);
  }
 });
+
+test('scope totals come from the API rather than the six-row preview and preserve partial errors', async () => {
+ const {searchScopes,searchTotal,flagAsset} = await import('../public/search.mjs');
+ const seen = [];
+ const fetcher = async url => { const scope = url.searchParams.get('scope'); seen.push(scope); return {ok:true,json:async()=>({data:{hits:Array(9).fill({type:scope==='events'?'event':'athlete',title:'Test',availability:'available_in_app'}),total:scope==='events'?142:27,total_is_estimate:true}})}; };
+ const data = await searchScopes('https://api.example.test/search','world','public',undefined,fetcher);
+ assert.deepEqual(seen.sort(),['athletes','events']); assert.equal(data.events.hits.length,6); assert.equal(data.events.total.value,142); assert.equal(data.athletes.total.value,27);
+ assert.equal(searchTotal({data:{hits:[]}}),null); assert.deepEqual(searchTotal({data:{total:0}}),{value:0,estimated:false});
+ const partial = await searchScopes('https://api.example.test/search','world','public',undefined,async url => url.searchParams.get('scope')==='events' ? {ok:false,status:429} : {ok:true,json:async()=>({data:{hits:[],total:0}})});
+ assert.equal(partial.events.error,429); assert.equal(partial.athletes.total.value,0);
+ assert.equal(flagAsset({flag_code:'de'},'https://example.test/preview/'),'https://example.test/preview/assets/flags/de.svg');
+ assert.equal(flagAsset({flag_code:'../bad'},'https://example.test/'),null); assert.equal(flagAsset(null,'https://example.test/'),null);
+});

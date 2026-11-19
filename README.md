@@ -13,7 +13,7 @@ npm run build
 npm run dev
 ```
 
-Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). Desktop can scroll on short screens. Mobile uses `100dvh` (with `100svh` fallback) and a scrollable results panel; the phone and marketing copy are hidden. Its picture source also avoids downloading a phone screenshot on mobile.
+Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). All viewports use a `100dvh` page (with `100svh` fallback), with no document scroll. Desktop typography, phone and QR sizes follow available height; compact viewports omit secondary marketing content. Mobile shows the brand/language header, search trigger, a real localized phone screenshot beside vertically stacked store buttons, and the footer links. Search opens a native modal dialog; results scroll inside it. Escape, close button and backdrop dismiss it, and native dialog focus containment keeps keyboard navigation inside. The phone scales with both viewport width and available height.
 
 ## Hosting on GitHub Pages
 
@@ -76,3 +76,11 @@ The launch poster is decorative artwork, not a particular race result. No invent
 - Admin role controls: https://github.com/adampachowicz/paddledata/pull/380
 
 Deploy the shared enum and API enforcement together before issuing/using a search-only key. An old API does not understand/enforce the new role. Before rolling the guard back, revoke the landing key; do not leave it active against an API without the restriction.
+
+Language and brand navigation use same-origin paths, including the GitHub Pages project prefix. Canonical, hreflang and sitemap URLs stay absolute to SITE_URL. Local review does not navigate to the production domain when changing languages.
+
+## Local result verification
+
+For this review the localhost preview may be built with `SEARCH_API_URL=/__search`, a dedicated local search-only key and `LOCAL_SEARCH_DEMO=true`. The banner explicitly labels the five-record test directory. The dev server forwards only `q` and `scope` to the fixed loopback `SEARCH_PROXY_TARGET`; this proxy is not shipped as a GitHub Pages backend and refuses non-loopback targets. Production still requires the reviewed shared/API/admin deployment and its own restricted key.
+
+Verified test queries: `fuksa`, `zwolinska` (Athletes), `marathon` (Competitions), plus an absent term. Responses travel through the real local Meilisearch → Laravel endpoint → localhost proxy. This is not a test against the production catalogue. Only “Powered by PaddleStats” remains in the footer, with an attributed link to the web app; no privacy/navigation footer links or “by PaddleStats” wordmark subtitle.
