@@ -13,7 +13,7 @@ npm run build
 npm run dev
 ```
 
-Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). Desktop can scroll on short screens. Mobile uses `100dvh` (with `100svh` fallback) and a scrollable results panel; the phone and marketing copy are hidden. Its picture source also avoids downloading a phone screenshot on mobile.
+Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). All viewports use a `100dvh` page (with `100svh` fallback), with no document scroll. Desktop typography, phone and QR sizes follow available height; compact viewports omit secondary marketing content. Mobile shows the brand/language header, search trigger and two store buttons. Search opens a native modal dialog; results scroll inside it. Escape, close button and backdrop dismiss it, and native dialog focus containment keeps keyboard navigation inside. The phone picture source avoids downloading a screenshot on mobile.
 
 ## Hosting on GitHub Pages
 
@@ -76,3 +76,5 @@ The launch poster is decorative artwork, not a particular race result. No invent
 - Admin role controls: https://github.com/adampachowicz/paddledata/pull/380
 
 Deploy the shared enum and API enforcement together before issuing/using a search-only key. An old API does not understand/enforce the new role. Before rolling the guard back, revoke the landing key; do not leave it active against an API without the restriction.
+
+Language and brand navigation use same-origin paths, including the GitHub Pages project prefix. Canonical, hreflang and sitemap URLs stay absolute to SITE_URL. Local review does not navigate to the production domain when changing languages.

@@ -1,6 +1,9 @@
 import { searchMessages } from './locales.mjs';
 import { normalizeHits, queryUrl, detectDevice, resultDestination } from './search.mjs';
 import { storeLinks } from './links.mjs';
+const dialog = document.querySelector('#search-dialog');
+const opener = document.querySelector('#open-search');
+const closer = document.querySelector('#close-search');
 const form = document.querySelector('#search-form');
 const field = document.querySelector('#search-query');
 const scope = document.querySelector('#search-scope');
@@ -51,12 +54,32 @@ async function search() {
     if (current === generation) results.removeAttribute('aria-busy');
   }
 }
-if (form && field && scope) {
+function openSearch() {
+  if (!dialog.open) dialog.showModal();
+  field.focus({preventScroll:true});
+}
+function chooseScope(value) {
+  scope.value = value;
+  for (const tab of document.querySelectorAll('[data-scope]')) tab.setAttribute('aria-pressed', String(tab.dataset.scope === value));
+}
+if (form && field && scope && dialog && opener && closer) {
+  opener.addEventListener('click', openSearch);
+  closer.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => { invalidate(); opener.focus({preventScroll:true}); });
+  dialog.addEventListener('click', event => {
+    if (event.target !== dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+  });
+  document.addEventListener('keydown', event => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openSearch(); }
+  });
+  for (const tab of document.querySelectorAll('[data-scope]')) tab.addEventListener('click', () => { chooseScope(tab.dataset.scope); field.focus({preventScroll:true}); if (field.value.trim().length >= 2) search(); });
   document.querySelector('.download').id = 'download';
   form.addEventListener('submit', e => { e.preventDefault(); search(); });
   field.addEventListener('input', () => { invalidate(); if ([...field.value.trim()].length >= 2) timer = setTimeout(search, 300); });
   scope.addEventListener('change', search);
   for (const suggestion of document.querySelectorAll('[data-query]')) suggestion.addEventListener('click', () => {
-    field.value = suggestion.dataset.query; scope.value = suggestion.dataset.scope; field.focus(); search();
+    field.value = suggestion.dataset.query; chooseScope(suggestion.dataset.scope); field.focus(); search();
   });
 }

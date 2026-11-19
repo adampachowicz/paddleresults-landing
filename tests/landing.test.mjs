@@ -24,6 +24,14 @@ for (const [code, copy] of Object.entries(locales)) {
     assert.equal(json['@graph'].find(x => x['@type'] === 'WebPage').inLanguage, code);
     assert.equal(json['@graph'].find(x => x['@type'] === 'SoftwareApplication').name, 'PaddleStats');
     assert.equal((html.match(/data-store=/g) || []).length, 2);
+    const nav = html.match(/<nav aria-label="[^"]*">(.*?)<\/nav>/s)[1];
+    assert.ok(!nav.includes('https://'), 'language navigation must stay on the current origin');
+    for (const lang of Object.keys(locales)) assert.ok(nav.includes(`href="/paddleresults-landing/${lang === 'en' ? '' : `${lang}/`}"`));
+    assert.equal((html.match(/id="search-query"/g) || []).length, 1);
+    assert.ok(html.includes('<dialog id="search-dialog"'));
+    assert.ok(html.includes('aria-haspopup="dialog"'));
+    assert.ok(html.includes(`aria-label="${copy.searchLabel}"`));
+
     for (const src of [...html.matchAll(/(?:src|href)="(\/paddleresults-landing\/(?:assets\/[^"?#]+|site\.js|style\.css))"/g)]) {
       await access(`dist/${src[1].replace('/paddleresults-landing/', '')}`);
     }

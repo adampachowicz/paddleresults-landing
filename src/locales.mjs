@@ -106,3 +106,5 @@ const actionCopy = {
  'pt-BR': ['Abrir no PaddleStats', 'Ver na App Store', 'Ver no Google Play', 'Escaneie para baixar']
 };
 for (const [code, v] of Object.entries(actionCopy)) Object.assign(searchMessages[code], { openWeb:v[0], openIos:v[1], openAndroid:v[2], qr:v[3] });
+
+for (const [code, value] of Object.entries({en:"Close search",pl:"Zamknij wyszukiwanie",de:"Suche schließen",hu:"Keresés bezárása",es:"Cerrar búsqueda","pt-BR":"Fechar busca"})) searchMessages[code].close = value;
