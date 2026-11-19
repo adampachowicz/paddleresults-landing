@@ -29,13 +29,17 @@ export const mockDirectory = {
   location:subtitle.split(' · ')[1],city:subtitle.split(' · ')[1],venue:null,country:country(subtitle.split(' · ')[2]),
   level:i===4 || i===6 ? 'european' : i===9 ? 'world_cup' : 'world',
   disciplines:[eventDisciplines[i]],discipline_groups:[group(eventDisciplines[i])],
+  start_date:`${subtitle.slice(0,4)}-06-12`,end_date:`${subtitle.slice(0,4)}-06-14`,races_count:12+i,race_unit:eventDisciplines[i]==='canoe-polo'?'matches':'races',
   results_count:20+i,athletes_count:40+i,countries_count:5+i,
   results_unit:eventDisciplines[i]==='canoe-polo' ? 'matches' : eventDisciplines[i]==='slalom' ? 'runs' : 'boat_results'})),
 };
 const normalize = value => value.toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l').trim();
-export function mockSearch(query, scope) {
- if (!['events','athletes'].includes(scope) || [...query.trim()].length < 2 || [...query.trim()].length > 80) return {status:422,body:{message:'Invalid search query or scope.',errors:{q:['Use 2–80 characters and a valid scope.']}}};
+export function mockSearch(query, scope = 'all', discipline = '') {
+ if (!['all','events','athletes'].includes(scope) || (discipline && !['canoe-sprint','canoe-slalom','canoe-polo','sup','ocean-racing','dragon-boat'].includes(discipline)) || [...query.trim()].length < 2 || [...query.trim()].length > 80) return {status:422,body:{message:'Invalid search query, scope or discipline.'}};
  const tokens = normalize(query).split(/\s+/);
- const hits = mockDirectory[scope].filter(hit=>tokens.every(token=>normalize(`${hit.title} ${hit.subtitle}`).includes(token)));
- return {status:200,body:{data:{hits:hits.slice(0,6),total:hits.length,total_is_estimate:false}}};
+ const byScope = Object.fromEntries(['events','athletes'].map(key=>[key,mockDirectory[key].filter(hit=>(!discipline || hit.discipline_groups.includes(discipline)) && tokens.every(token=>normalize(`${hit.title} ${hit.subtitle}`).includes(token)))]));
+ const totals = {events:byScope.events.length,athletes:byScope.athletes.length}; totals.all = totals.events+totals.athletes;
+ const candidates = scope==='all' ? [...byScope.events,...byScope.athletes] : byScope[scope];
+ const hits = candidates.map(hit=>({...hit,relevance:normalize(hit.title)===normalize(query)?1:normalize(hit.title).startsWith(normalize(query))?.95:.8})).sort((a,b)=>b.relevance-a.relevance).slice(0,6);
+ return {status:200,body:{data:{hits,total:totals[scope],totals,total_is_estimate:false}}};
 }

@@ -36,15 +36,19 @@ test('result links select iOS, Android or a real PaddleStats web search', async 
  }
 });
 
-test('scope totals come from the API rather than the six-row preview and preserve partial errors', async () => {
- const {searchScopes,searchTotal,flagAsset} = await import('../public/search.mjs');
- const seen = [];
- const fetcher = async url => { const scope = url.searchParams.get('scope'); seen.push(scope); return {ok:true,json:async()=>({data:{hits:Array(9).fill({type:scope==='events'?'event':'athlete',title:'Test',availability:'available_in_app'}),total:scope==='events'?142:27,total_is_estimate:true}})}; };
- const data = await searchScopes('https://api.example.test/search','world','public',undefined,fetcher);
- assert.deepEqual(seen.sort(),['athletes','events']); assert.equal(data.events.hits.length,6); assert.equal(data.events.total.value,142); assert.equal(data.athletes.total.value,27);
+test('mixed search uses API totals and sends the discipline filter before preview limits', async () => {
+ const {searchDirectory,searchTotal,flagAsset,eventDetails} = await import('../public/search.mjs');
+ let called;
+ const fetcher = async url => { called=url; return {ok:true,json:async()=>({data:{hits:[{type:'athlete',title:'Klaudia',availability:'available_in_app'},{type:'event',title:'Slalom',availability:'available_in_app'}],total:169,totals:{all:169,events:142,athletes:27},total_is_estimate:true}})}; };
+ const data = await searchDirectory('https://api.example.test/search','world','all','canoe-slalom','public',undefined,fetcher);
+ assert.equal(called.searchParams.get('scope'),'all'); assert.equal(called.searchParams.get('discipline'),'canoe-slalom');
+ assert.equal(data.hits.length,2); assert.equal(data.total.value,169); assert.equal(data.totals.events,142);
  assert.equal(searchTotal({data:{hits:[]}}),null); assert.deepEqual(searchTotal({data:{total:0}}),{value:0,estimated:false});
- const partial = await searchScopes('https://api.example.test/search','world','public',undefined,async url => url.searchParams.get('scope')==='events' ? {ok:false,status:429} : {ok:true,json:async()=>({data:{hits:[],total:0}})});
- assert.equal(partial.events.error,429); assert.equal(partial.athletes.total.value,0);
+ const failed = await searchDirectory('https://api.example.test/search','world','all','', 'public',undefined,async()=>({ok:false,status:429}));
+ assert.equal(failed.error,429);
  assert.equal(flagAsset({flag_code:'de'},'https://example.test/preview/'),'https://example.test/preview/assets/flags/de.svg');
- assert.equal(flagAsset({flag_code:'../bad'},'https://example.test/'),null); assert.equal(flagAsset(null,'https://example.test/'),null);
+ assert.equal(flagAsset({flag_code:'../bad'},'https://example.test/'),null);
+ const details = eventDetails({type:'event',start_date:'2026-06-12',end_date:'2026-06-14',races_count:0,race_unit:'matches',athletes_count:100,countries_count:null},'pl',searchMessages.pl);
+ assert.ok(details[0].includes('2026')); assert.ok(details.includes('0 meczów')); assert.ok(details.includes('100 zawodników')); assert.equal(details.length,3);
+ assert.deepEqual(eventDetails({type:'event',races_count:null},'en',searchMessages.en),[]);
 });

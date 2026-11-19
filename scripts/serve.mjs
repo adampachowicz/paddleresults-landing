@@ -10,7 +10,7 @@ http.createServer(async (req, res) => {
     if (incoming.pathname === '/__search') {
       if (req.method !== 'GET') { res.writeHead(405).end(); return; }
       if (process.env.SEARCH_MOCK === 'true') {
-        const result = mockSearch(incoming.searchParams.get('q') || '', incoming.searchParams.get('scope') || '');
+        const result = mockSearch(incoming.searchParams.get('q') || '', incoming.searchParams.get('scope') || 'all', incoming.searchParams.get('discipline') || '');
         res.writeHead(result.status, {'Content-Type':'application/json', 'Cache-Control':'no-store'}).end(JSON.stringify(result.body));
         return;
       }
@@ -19,6 +19,7 @@ http.createServer(async (req, res) => {
       if (!['127.0.0.1','localhost'].includes(target.hostname)) { res.writeHead(503).end(); return; }
       target.searchParams.set('q', incoming.searchParams.get('q') || '');
       target.searchParams.set('scope', incoming.searchParams.get('scope') || 'events');
+      if (incoming.searchParams.has('discipline')) target.searchParams.set('discipline', incoming.searchParams.get('discipline'));
       const upstream = await fetch(target, { headers:{ Accept:'application/json', 'X-API-Key':req.headers['x-api-key'] || '' }, signal:AbortSignal.timeout(8000), redirect:'error' });
       res.writeHead(upstream.status, {'Content-Type':'application/json','Cache-Control':'no-store'}).end(await upstream.text());
       return;

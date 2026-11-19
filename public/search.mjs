@@ -1,12 +1,13 @@
 export function normalizeHits(payload, scope) {
   const hits = payload?.data?.hits;
   if (!Array.isArray(hits)) throw new Error('Invalid search response');
-  return hits.filter(h => h && typeof h.title === 'string' && ['athlete', 'event'].includes(h.type) && h.availability === 'available_in_app' && (scope === 'events' ? h.type === 'event' : h.type === 'athlete')).slice(0, 6);
+  return hits.filter(h => h && typeof h.title === 'string' && ['athlete', 'event'].includes(h.type) && h.availability === 'available_in_app' && (scope === 'all' || (scope === 'events' ? h.type === 'event' : h.type === 'athlete'))).slice(0, 6);
 }
-export function queryUrl(endpoint, query, scope) {
+export function queryUrl(endpoint, query, scope, discipline = null) {
   const url = new URL(endpoint, globalThis.location?.origin || 'http://localhost:4174');
   url.searchParams.set('q', query.trim());
   url.searchParams.set('scope', scope);
+  if (discipline) url.searchParams.set('discipline',discipline);
   return url;
 }
 export function detectDevice({userAgent = '', platform = '', maxTouchPoints = 0} = {}) {
@@ -31,13 +32,21 @@ export function flagAsset(country, baseUrl) {
  const code = country?.flag_code;
  return typeof code === 'string' && /^[a-z]{2}$/.test(code) ? new URL(`assets/flags/${code}.svg`, baseUrl).href : null;
 }
-export async function searchScopes(endpoint, query, key, signal, fetcher = fetch) {
- return Object.fromEntries(await Promise.all(['events','athletes'].map(async scope => {
-  try {
-   const response = await fetcher(queryUrl(endpoint,query,scope), {headers:{Accept:'application/json','X-API-Key':key},signal,credentials:'omit',referrerPolicy:'no-referrer'});
-   if (!response.ok) return [scope,{error:response.status}];
-   const payload = await response.json();
-   return [scope,{hits:normalizeHits(payload,scope),total:searchTotal(payload)}];
-  } catch (error) { if (signal?.aborted) throw error; return [scope,{error:503}]; }
- })));
+export async function searchDirectory(endpoint, query, scope, discipline, key, signal, fetcher = fetch) {
+ const response = await fetcher(queryUrl(endpoint,query,scope,discipline), {headers:{Accept:'application/json','X-API-Key':key},signal,credentials:'omit',referrerPolicy:'no-referrer'});
+ if (!response.ok) return {error:response.status};
+ const payload = await response.json();
+ const totals = payload?.data?.totals;
+ return {hits:normalizeHits(payload,scope),total:searchTotal(payload),totals:totals && ['all','events','athletes'].every(k=>Number.isSafeInteger(totals[k]) && totals[k]>=0) ? totals : null,estimated:payload?.data?.total_is_estimate===true};
+}
+export function eventDetails(hit, locale, t) {
+ if (hit.type !== 'event') return [];
+ const parts = [];
+ const dates = [hit.start_date,hit.end_date].filter((d,i,a)=>typeof d==='string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && a.indexOf(d)===i);
+ const format = new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+ if (dates.length) parts.push(dates.map(d=>format.format(new Date(`${d}T00:00:00Z`))).join(' – '));
+ for (const [field,label] of [['races_count',hit.race_unit==='matches' ? t.matches : t.races],['athletes_count',t.athleteCount],['countries_count',t.countryCount]]) {
+  if (Number.isSafeInteger(hit[field]) && hit[field]>=0) parts.push(`${new Intl.NumberFormat(locale).format(hit[field])} ${label}`);
+ }
+ return parts;
 }

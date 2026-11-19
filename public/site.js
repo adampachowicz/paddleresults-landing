@@ -1,5 +1,5 @@
 import { searchMessages } from './locales.mjs';
-import { searchScopes, flagAsset, detectDevice, resultDestination } from './search.mjs';
+import { searchDirectory, eventDetails, flagAsset, detectDevice, resultDestination } from './search.mjs';
 import { storeLinks } from './links.mjs';
 const dialog = document.querySelector('#search-dialog');
 const opener = document.querySelector('#open-search');
@@ -14,11 +14,12 @@ const locale = document.documentElement.lang;
 const t = searchMessages[locale] || searchMessages.en;
 const device = detectDevice(navigator);
 const stores = storeLinks(locale, 'search');
-let timer, controller, generation = 0, cachedQuery = null, cachedScopes = null, cachedAt = 0;
+let timer, controller, generation = 0, cachedQuery = null, cachedScopes = null, cachedAt = 0, discipline = '';
 const flagBase = new URL('./', import.meta.url);
 function updateCounts(data) {
  for (const node of document.querySelectorAll('[data-count]')) {
-  const total = data?.[node.dataset.count]?.total;
+  const value = data?.totals?.[node.dataset.count];
+  const total = Number.isSafeInteger(value) ? {value,estimated:data.estimated} : null;
   node.hidden = !total;
   node.textContent = total ? `${total.estimated && total.value > 0 ? '≈' : ''}${new Intl.NumberFormat(locale).format(total.value)}` : '';
  }
@@ -37,11 +38,12 @@ async function search() {
   status.textContent = t.loading;
   results.setAttribute('aria-busy', 'true');
   try {
-    const data = cachedQuery === q && cachedScopes && Date.now()-cachedAt < 60000 ? cachedScopes : await searchScopes(area.dataset.searchApi, q, area.dataset.searchKey, activeController.signal);
+    const cacheKey = JSON.stringify([q,scope.value,discipline]);
+    const data = cachedQuery === cacheKey && cachedScopes && Date.now()-cachedAt < 60000 ? cachedScopes : await searchDirectory(area.dataset.searchApi, q, scope.value, discipline, area.dataset.searchKey, activeController.signal);
     if (current !== generation) return;
-    if (!Object.values(data).some(section => section.error)) { cachedQuery = q; cachedScopes = data; cachedAt = Date.now(); }
+    if (!data.error) { cachedQuery = cacheKey; cachedScopes = data; cachedAt = Date.now(); }
     updateCounts(data);
-    const selected = data[scope.value];
+    const selected = data;
     if (selected.error) { status.textContent = selected.error === 429 ? t.limited : t.error; return; }
     const hits = selected.hits;
     const total = selected.total;
@@ -57,7 +59,10 @@ async function search() {
         const flag = document.createElement('img'); flag.className = 'hit-flag'; flag.src = flagUrl; flag.alt = hit.country.name || hit.country.code || ''; flag.width = 20; flag.height = 15; flag.addEventListener('error', () => flag.remove(), {once:true}); title.prepend(flag);
       }
       const subtitle = document.createElement('div'); subtitle.className = 'hit-subtitle'; subtitle.textContent = hit.subtitle || '';
-      copy.append(title, subtitle);
+      const kind = document.createElement('span'); kind.className = 'hit-kind'; kind.textContent = hit.type === 'event' ? t.eventType : t.athleteType;
+      copy.append(kind, title, subtitle);
+      const details = eventDetails(hit,locale,t);
+      if (details.length) { const meta = document.createElement('div'); meta.className = 'hit-details'; meta.textContent = details.join(' · '); copy.append(meta); }
       const open = document.createElement('a'); open.className = 'hit-open'; open.href = destination; open.textContent = label; open.setAttribute('aria-label', `${label} — ${hit.title}`);
       row.append(copy, open); results.append(row);
     }
@@ -77,6 +82,10 @@ function chooseScope(value) {
   scope.value = value;
   for (const tab of document.querySelectorAll('[data-scope]')) tab.setAttribute('aria-pressed', String(tab.dataset.scope === value));
 }
+function chooseDiscipline(value) {
+ discipline = value;
+ for (const node of document.querySelectorAll('[data-discipline]')) node.setAttribute('aria-pressed',String(node.dataset.discipline===value));
+}
 if (form && field && scope && dialog && opener && closer) {
   opener.addEventListener('click', openSearch);
   closer.addEventListener('click', () => dialog.close());
@@ -90,11 +99,15 @@ if (form && field && scope && dialog && opener && closer) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openSearch(); }
   });
   for (const tab of document.querySelectorAll('[data-scope]')) tab.addEventListener('click', () => { chooseScope(tab.dataset.scope); field.focus({preventScroll:true}); if (field.value.trim().length >= 2) search(); });
+  for (const pill of document.querySelectorAll('[data-discipline]')) pill.addEventListener('click', () => {
+    chooseDiscipline(pill.dataset.discipline);
+    field.focus({preventScroll:true}); if (field.value.trim().length>=2) search();
+  });
   document.querySelector('.download').id = 'download';
   form.addEventListener('submit', e => { e.preventDefault(); search(); });
   field.addEventListener('input', () => { invalidate(); if ([...field.value.trim()].length >= 2) timer = setTimeout(search, 300); });
   scope.addEventListener('change', search);
   for (const suggestion of document.querySelectorAll('[data-query]')) suggestion.addEventListener('click', () => {
-    field.value = suggestion.dataset.query; chooseScope(suggestion.dataset.scope); field.focus(); search();
+    field.value = suggestion.dataset.query; chooseScope('all'); chooseDiscipline(''); field.focus(); search();
   });
 }

@@ -18,3 +18,10 @@ test('mock searches names, accents, places and years and preserves empty and inv
  assert.equal(mockSearch('zzzzmissing','events').body.data.hits.length,0);
  assert.equal(mockSearch('m','athletes').status,422);assert.equal(mockSearch('Martin','coaches').status,422);
 });
+test('best matches find an athlete without manually switching away from competitions',()=>{
+ const response=mockSearch('zwol','all');
+ assert.equal(response.body.data.hits[0].type,'athlete'); assert.equal(response.body.data.totals.events,0);assert.equal(response.body.data.totals.athletes,1);
+ assert.equal(mockSearch('ICF','all','canoe-polo').body.data.hits.length,1);
+ assert.equal(mockSearch('ICF','all','canoe-polo').body.data.total,1);
+ assert.equal(mockSearch('ICF','all','unknown').status,422);
+});
