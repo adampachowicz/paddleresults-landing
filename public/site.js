@@ -1,5 +1,5 @@
 import { searchMessages } from './locales.mjs';
-import { normalizeHits, queryUrl, detectDevice, resultDestination } from './search.mjs';
+import { searchScopes, flagAsset, detectDevice, resultDestination } from './search.mjs';
 import { storeLinks } from './links.mjs';
 const dialog = document.querySelector('#search-dialog');
 const opener = document.querySelector('#open-search');
@@ -14,9 +14,17 @@ const locale = document.documentElement.lang;
 const t = searchMessages[locale] || searchMessages.en;
 const device = detectDevice(navigator);
 const stores = storeLinks(locale, 'search');
-let timer, controller, generation = 0;
+let timer, controller, generation = 0, cachedQuery = null, cachedScopes = null, cachedAt = 0;
+const flagBase = new URL('./', import.meta.url);
+function updateCounts(data) {
+ for (const node of document.querySelectorAll('[data-count]')) {
+  const total = data?.[node.dataset.count]?.total;
+  node.hidden = !total;
+  node.textContent = total ? `${total.estimated && total.value > 0 ? '≈' : ''}${new Intl.NumberFormat(locale).format(total.value)}` : '';
+ }
+}
 function clear() { results.replaceChildren(); results.hidden = true; }
-function invalidate() { generation++; controller?.abort(); clearTimeout(timer); clear(); status.textContent = ''; }
+function invalidate() { generation++; controller?.abort(); clearTimeout(timer); clear(); updateCounts(null); status.textContent = ''; }
 async function search() {
   invalidate();
   const current = generation;
@@ -29,18 +37,25 @@ async function search() {
   status.textContent = t.loading;
   results.setAttribute('aria-busy', 'true');
   try {
-    const response = await fetch(queryUrl(area.dataset.searchApi, q, scope.value), { headers: { Accept: 'application/json', 'X-API-Key': area.dataset.searchKey }, signal: activeController.signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
+    const data = cachedQuery === q && cachedScopes && Date.now()-cachedAt < 60000 ? cachedScopes : await searchScopes(area.dataset.searchApi, q, area.dataset.searchKey, activeController.signal);
     if (current !== generation) return;
-    if (!response.ok) { status.textContent = response.status === 429 ? t.limited : t.error; return; }
-    const hits = normalizeHits(await response.json(), scope.value);
-    if (current !== generation) return;
-    status.textContent = hits.length ? `${t.results}: ${hits.length}` : t.empty;
+    if (!Object.values(data).some(section => section.error)) { cachedQuery = q; cachedScopes = data; cachedAt = Date.now(); }
+    updateCounts(data);
+    const selected = data[scope.value];
+    if (selected.error) { status.textContent = selected.error === 429 ? t.limited : t.error; return; }
+    const hits = selected.hits;
+    const total = selected.total;
+    status.textContent = hits.length ? `${t.results}: ${total ? `${total.estimated ? '≈' : ''}${new Intl.NumberFormat(locale).format(total.value)}` : hits.length}` : t.empty;
     for (const hit of hits) {
       const row = document.createElement('div'); row.className = 'search-hit';
       const copy = document.createElement('div'); copy.className = 'hit-copy';
       const destination = resultDestination(hit, locale, device, stores);
       const label = device === 'ios' ? t.openIos : device === 'android' ? t.openAndroid : t.openWeb;
       const title = document.createElement('a'); title.className = 'hit-title'; title.textContent = hit.title; title.href = destination;
+      const flagUrl = flagAsset(hit.country, flagBase);
+      if (flagUrl) {
+        const flag = document.createElement('img'); flag.className = 'hit-flag'; flag.src = flagUrl; flag.alt = hit.country.name || hit.country.code || ''; flag.width = 20; flag.height = 15; flag.addEventListener('error', () => flag.remove(), {once:true}); title.prepend(flag);
+      }
       const subtitle = document.createElement('div'); subtitle.className = 'hit-subtitle'; subtitle.textContent = hit.subtitle || '';
       copy.append(title, subtitle);
       const open = document.createElement('a'); open.className = 'hit-open'; open.href = destination; open.textContent = label; open.setAttribute('aria-label', `${label} — ${hit.title}`);
@@ -65,7 +80,7 @@ function chooseScope(value) {
 if (form && field && scope && dialog && opener && closer) {
   opener.addEventListener('click', openSearch);
   closer.addEventListener('click', () => dialog.close());
-  dialog.addEventListener('close', () => { invalidate(); opener.focus({preventScroll:true}); });
+  dialog.addEventListener('close', () => { cachedScopes = null; invalidate(); opener.focus({preventScroll:true}); });
   dialog.addEventListener('click', event => {
     if (event.target !== dialog) return;
     const rect = dialog.getBoundingClientRect();

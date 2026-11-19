@@ -19,7 +19,7 @@ const countries = {CZE:'Czechia',POR:'Portugal',POL:'Poland',NZL:'New Zealand',A
 const personNames = [['Martin','Fuksa'],['Fernando','Pimenta'],['Klaudia','Zwolińska'],['Lisa','Carrington'],['Jessica','Fox'],['Jiří','Prskavec'],['Joseph','Clarke'],['Max','Rendschmidt'],['Sebastian','Brendel'],['Katie','Vincent']];
 const eventDisciplines = ['sprint','marathon','marathon','slalom','slalom','canoe-polo','canoe-polo','sup','ocean','sprint'];
 const group = d => ({sprint:'canoe-sprint',marathon:'canoe-sprint',slalom:'canoe-slalom',ocean:'ocean-racing'}[d] || d);
-const country = code => ({code,name:countries[code]});
+const country = code => { const flag_code = {CZE:'cz',POR:'pt',POL:'pl',NZL:'nz',AUS:'au',GBR:'gb',GER:'de',CAN:'ca',ARG:'ar',ITA:'it',ESP:'es',HUN:'hu'}[code]; return {code,name:countries[code],flag_code,flag_emoji:[...flag_code.toUpperCase()].map(c=>String.fromCodePoint(c.charCodeAt(0)-65+0x1f1e6)).join('')}; };
 export const mockDirectory = {
  athletes: people.map(([title,subtitle],i)=>({type:'athlete',id:900001+i,title,subtitle,availability:'available_in_app',
   first_name:personNames[i][0],last_name:personNames[i][1],country:country(subtitle),
@@ -36,6 +36,6 @@ const normalize = value => value.toLowerCase().normalize('NFD').replace(/\p{M}/g
 export function mockSearch(query, scope) {
  if (!['events','athletes'].includes(scope) || [...query.trim()].length < 2 || [...query.trim()].length > 80) return {status:422,body:{message:'Invalid search query or scope.',errors:{q:['Use 2–80 characters and a valid scope.']}}};
  const tokens = normalize(query).split(/\s+/);
- const hits = mockDirectory[scope].filter(hit=>tokens.every(token=>normalize(`${hit.title} ${hit.subtitle}`).includes(token))).slice(0,6);
- return {status:200,body:{data:{hits}}};
+ const hits = mockDirectory[scope].filter(hit=>tokens.every(token=>normalize(`${hit.title} ${hit.subtitle}`).includes(token)));
+ return {status:200,body:{data:{hits:hits.slice(0,6),total:hits.length,total_is_estimate:false}}};
 }

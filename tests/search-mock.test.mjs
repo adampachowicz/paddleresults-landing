@@ -9,7 +9,7 @@ test('local directory contains ten athletes and ten events in the production con
   if (scope==='events') { for (const field of ['results_count','athletes_count','countries_count']) assert.ok(Number.isInteger(hit[field])); assert.ok(['matches','runs','boat_results'].includes(hit.results_unit)); assert.ok(hit.location); assert.ok(hit.level); }
   else { assert.ok(hit.first_name); assert.ok(hit.last_name); assert.equal(hit.age,null); assert.equal(hit.club,null); }
  }
- const response = mockSearch('ICF','events'); assert.equal(response.status,200);assert.equal(response.body.data.hits.length,6);assert.equal(normalizeHits(response.body,'events').length,6);
+ const response = mockSearch('ICF','events'); assert.equal(response.status,200);assert.equal(response.body.data.total,8);assert.equal(response.body.data.total_is_estimate,false);assert.equal(response.body.data.hits.length,6);assert.equal(normalizeHits(response.body,'events').length,6);
 });
 test('mock searches names, accents, places and years and preserves empty and invalid states',()=>{
  assert.equal(mockSearch('zwolinska','athletes').body.data.hits[0].title,'Klaudia Zwolińska');

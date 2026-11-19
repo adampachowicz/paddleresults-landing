@@ -31,3 +31,4 @@
 .footer{justify-content:center;align-items:center;min-height:0}.powered-by{display:inline-flex;align-items:center;gap:4px;font-size:10px;line-height:1.5;color:var(--muted)}.powered-by strong{font-weight:650;color:#514e48}.powered-by:hover strong{text-decoration:underline}@media(max-width:599px){.footer{height:44px;min-height:44px;padding:10px 0;flex-direction:row;gap:0}}
 
 .demo-note{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin:-3px 0 8px}
+.scope-count{display:inline-block;min-width:1.4em;margin-left:4px;font-size:10px;font-variant-numeric:tabular-nums;opacity:.75}.scope-count[hidden]{display:none}.hit-flag{display:inline-block;width:20px;height:15px;object-fit:cover;margin-right:7px;vertical-align:-2px;border-radius:2px;box-shadow:0 0 0 1px #18181612}

@@ -23,3 +23,21 @@ export function resultDestination(hit, locale, device, stores) {
  for (const [k,v] of Object.entries({utm_source:'paddleresults.com',utm_medium:'referral',utm_campaign:'paddleresults_launch_v1',utm_content:`search_${hit.type}_${locale}`})) url.searchParams.set(k,v);
  return url.href;
 }
+export function searchTotal(payload) {
+ const total = payload?.data?.total;
+ return Number.isSafeInteger(total) && total >= 0 ? {value:total,estimated:payload.data.total_is_estimate === true} : null;
+}
+export function flagAsset(country, baseUrl) {
+ const code = country?.flag_code;
+ return typeof code === 'string' && /^[a-z]{2}$/.test(code) ? new URL(`assets/flags/${code}.svg`, baseUrl).href : null;
+}
+export async function searchScopes(endpoint, query, key, signal, fetcher = fetch) {
+ return Object.fromEntries(await Promise.all(['events','athletes'].map(async scope => {
+  try {
+   const response = await fetcher(queryUrl(endpoint,query,scope), {headers:{Accept:'application/json','X-API-Key':key},signal,credentials:'omit',referrerPolicy:'no-referrer'});
+   if (!response.ok) return [scope,{error:response.status}];
+   const payload = await response.json();
+   return [scope,{hits:normalizeHits(payload,scope),total:searchTotal(payload)}];
+  } catch (error) { if (signal?.aborted) throw error; return [scope,{error:503}]; }
+ })));
+}
