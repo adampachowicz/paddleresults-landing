@@ -1,18 +1,19 @@
 # PaddleResults by PaddleStats
 
-A single-screen, multilingual app landing page for **paddleresults.com**. Original PaddleStats / Plakaciarz artwork, six fully rendered language pages, real store links and an honest search handoff to PaddleStats.
+A responsive, multilingual app landing page for **paddleresults.com**. A coral PaddleResults mark derived from our Brand / Mark variants, actual localized app screenshots on desktop, six fully rendered language pages, store links and a live directory search integration. Mobile intentionally shows only the brand/language header, search and two store buttons in a viewport-height layout.
 
 ## Local preview
 
-Node 22+; no package installation or runtime dependencies required.
+Node 22+. `qrcode` is a build-only development dependency; the published page has no framework runtime.
 
 ```sh
+npm ci
 npm test
 npm run build
 npm run dev
 ```
 
-Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). The page uses `min-height: 100svh`: it fills a normal screen but may scroll on short screens, at increased text size, or with the keyboard open. Content is never cropped to force an exact height.
+Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). Desktop can scroll on short screens. Mobile uses `100dvh` (with `100svh` fallback) and a scrollable results panel; the phone and marketing copy are hidden. Its picture source also avoids downloading a phone screenshot on mobile.
 
 ## Hosting on GitHub Pages
 
@@ -43,7 +44,18 @@ Apple also receives `pt=128893100`, `ct=paddleresults_v1_<locale>`, and `mt=8`, 
 
 **A tagged link is not a measured installation or click counter.** Verify campaigns in App Store Connect / Play Console, subject to their attribution windows and reporting thresholds. Install Referrer requires the receiving Android app/analytics to read it for app-level reporting. This landing installs no analytics SDK and creates no cookies. It does not claim campaign reports have been verified.
 
-Search sends the entered query, selected scope, locale and a separate `utm_content=search_<locale>` to the existing `/results?q=...` or `/athletes?q=...` routes. Its hint explicitly states that searches continue on paddlestats.eu and coverage varies. There are no fabricated results, availability claims, or competitor affiliations.
+## Live directory API — activation required
+
+The landing never ships a full-access API key. After the coordinated shared/API/admin PRs are deployed:
+
+1. In admin → System → API Keys generate a new Free-tier key named `PaddleResults search` with role `search_only` / “Tylko wyszukiwanie — PaddleResults”. The role is a public client identifier; API restrictions must work even if someone copies it.
+2. Configure API `FRONTEND_URLS` to include the exact landing origins used (preview `https://adampachowicz.github.io`; launch `https://paddleresults.com`; local `http://localhost:4174` only in development). Do not enable wildcard CORS. This setting does not replace authorization.
+3. Set repository Actions variables `SEARCH_API_URL=https://api.paddlestats.eu/api/v1/discovery/search` (verify the actual API host in deployment), and `SEARCH_PUBLIC_KEY` to this **search-only** key. These values are deliberately public in HTML, not GitHub Secrets. No credential has been generated or installed by this source change.
+4. Rebuild and verify real existing and absent names in all locales, response 403 for this key on `/athletes`, `/search`, `/results`, news/live and write routes; 429 on a burst; disable/revoke the key and check expiry of the 60-second authentication cache.
+
+Typing triggers a 300ms debounced request with stale requests cancelled and an 8-second timeout. It returns up to six matching athletes or events, as real links. iOS opens the App Store; Android opens Google Play; desktop opens `/results?q=...` or `/athletes?q=...` on PaddleStats. iPad desktop-mode user agents are recognized. A match means a directory profile/competition is indexed; it does not promise complete results for every race. Desktop also shows separate, locally generated App Store and Google Play QR codes, with `ios_qr_<locale>` / `android_qr_<locale>` attribution. Search links use `*_search_<locale>`. No external QR service receives campaign URLs. Backend lookup uses a single main Meilisearch index without facet queries; published slalom and polo identities retain existing publication checks. No response cache or search-query logging is added. The role permits only GET `/api/v1/discovery/search`, with per-IP daily quota and burst throttling. Existing full/archive roles keep their behavior.
+
+Without configuration the UI explicitly says the search is being connected. Service failure, no matches and throttling have separate messages. This is not a claim of verified production search or app installs. Tagged store attribution is unchanged.
 
 ## Content and assets
 
@@ -56,3 +68,11 @@ Search sends the entered query, selected scope, locale and a separate `utm_conte
 Official localized App Store and Google Play badge artwork is reused from PaddleStats' existing badge assets. Original PaddleStats branding is retained. These assets and trademarks are not offered under an open-source license; public source hosting does not grant redistribution rights.
 
 The launch poster is decorative artwork, not a particular race result. No invented athlete counts, medal totals or race times are used. The limited content of an app landing page does not guarantee rankings for broad result queries.
+
+## Coordinated backend review
+
+- Shared enum: https://github.com/adampachowicz/paddle-shared/pull/39
+- API enforcement and endpoint: https://github.com/adampachowicz/paddle-api/pull/197
+- Admin role controls: https://github.com/adampachowicz/paddledata/pull/380
+
+Deploy the shared enum and API enforcement together before issuing/using a search-only key. An old API does not understand/enforce the new role. Before rolling the guard back, revoke the landing key; do not leave it active against an API without the restriction.

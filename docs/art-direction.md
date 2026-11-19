@@ -1,3 +1,13 @@
+# Current revision — coral brand and real app screens
+
+19 November 2026, revised at the user’s request. The previous blue illustrated hero is superseded. The actual `/brand` Mark variants SVG path is retained, recolored coral (#ff4438 / #c62d27) and paired with a code-rendered PaddleResults wordmark and explicit “by PaddleStats”. Palette inspiration: https://results.quko.es/competitions (warm #f5f3ef surface, near-black, coral); no competitor logo or art is used.
+
+Desktop: CSS phone frame with the existing real `outputs/app-store/main-product-page/v4-ten-slot/<locale>/raw/sprint.png` screenshot, 1206×2622, for all six languages. No AI-generated app interface or invented screenshot. Mobile: no phone, illustration, promotional copy, footer or QR; viewport-height directory search and two store buttons, with brand/language header. QR codes are deterministic SVGs generated locally from actual tagged store destinations.
+
+Current OG source is `public/assets/og-app.svg`, a native SVG composition with our mark and actual EN screenshot. Its raster export `public/assets/og-app.png` is **1200×630**, rendered with librsvg (`rsvg-convert`). It is not an ImageGen edit. The older ImageGen prompts below document the superseded illustration only.
+
+---
+
 # The race ends. The story stays.
 
 PaddleResults app launch, 19 November 2026. Built-in ImageGen with the PaddleStats Plakaciarz art direction; the viewed canoe-polo reference established a family of light backgrounds, ink typography and geometric sport illustration. No competitor artwork or visual identity is used.

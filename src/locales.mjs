@@ -1,3 +1,13 @@
+const searchCopy = {
+  en: ["Search our archive. Matching profiles and competitions appear here.","Searching…","No matches. Try a surname, venue or shorter name.","Search is temporarily unavailable. Please try again.","Too many searches. Please wait a moment.","Available in PaddleStats","Download the app","Search is being connected. Please try again later.","Type at least 2 characters.","Results"],
+  pl: ["Przeszukaj nasze archiwum. Dopasowane profile i zawody pojawią się tutaj.","Wyszukuję…","Brak dopasowań. Spróbuj nazwiska, miejscowości lub krótszej nazwy.","Wyszukiwanie jest chwilowo niedostępne. Spróbuj ponownie.","Zbyt wiele zapytań. Spróbuj za chwilę.","Dostępne w PaddleStats","Pobierz aplikację","Trwa podłączanie wyszukiwarki. Spróbuj ponownie później.","Wpisz co najmniej 2 znaki.","Wyniki"],
+  de: ["Durchsuche unser Archiv. Passende Profile und Wettkämpfe erscheinen hier.","Suche läuft…","Keine Treffer. Versuche einen Nachnamen, Ort oder kürzeren Namen.","Die Suche ist vorübergehend nicht verfügbar. Bitte erneut versuchen.","Zu viele Suchanfragen. Bitte kurz warten.","In PaddleStats verfügbar","App herunterladen","Die Suche wird eingerichtet. Bitte später erneut versuchen.","Gib mindestens 2 Zeichen ein.","Ergebnisse"],
+  hu: ["Keress az archívumunkban. A találatok itt jelennek meg.","Keresés…","Nincs találat. Próbálj vezetéknevet, helyszínt vagy rövidebb nevet.","A keresés átmenetileg nem érhető el. Próbáld újra.","Túl sok keresés. Várj egy kicsit.","Elérhető a PaddleStatsban","Az alkalmazás letöltése","A kereső beállítása folyamatban van. Próbáld újra később.","Írj be legalább 2 karaktert.","Találatok"],
+  es: ["Busca en nuestro archivo. Los perfiles y las competiciones aparecerán aquí.","Buscando…","Sin coincidencias. Prueba un apellido, lugar o nombre más corto.","La búsqueda no está disponible temporalmente. Inténtalo de nuevo.","Demasiadas búsquedas. Espera un momento.","Disponible en PaddleStats","Descargar la app","Estamos conectando la búsqueda. Vuelve a intentarlo más tarde.","Escribe al menos 2 caracteres.","Resultados"],
+  "pt-BR": ["Pesquise em nosso arquivo. Perfis e competições aparecerão aqui.","Buscando…","Nenhum resultado. Tente um sobrenome, local ou nome mais curto.","A busca está temporariamente indisponível. Tente novamente.","Muitas buscas. Aguarde um momento.","Disponível no PaddleStats","Baixar o aplicativo","Estamos conectando a busca. Tente novamente mais tarde.","Digite pelo menos 2 caracteres.","Resultados"]
+};
+export const searchMessages = Object.fromEntries(Object.entries(searchCopy).map(([code,v])=>[code,Object.fromEntries(["hint","loading","empty","error","limited","available","download","unconfigured","short","results"].map((k,i)=>[k,v[i]]))]));
+
 export const locales = {
   en: {
     name: 'English', ogLocale: 'en_US', title: 'Canoe, kayak & SUP results app | PaddleResults by PaddleStats',
@@ -84,3 +94,15 @@ export const locales = {
     artLabel: 'DA ÁGUA. DIRETO PARA SUAS MÃOS.', footer: 'Uma experiência do PaddleStats.', skip: 'Ir para o conteúdo',
   },
 };
+
+for (const [code, t] of Object.entries(locales)) { t.searchHint = searchMessages[code].hint; t.artAlt = ({en:"PaddleStats app showing a canoe sprint competition programme and results.",pl:"Aplikacja PaddleStats z programem i wynikami zawodów sprintu kajakowego.",de:"PaddleStats-App mit Programm und Ergebnissen eines Kanurennsport-Wettkampfs.",hu:"A PaddleStats alkalmazás kajak-kenu versenyprogrammal és eredményekkel.",es:"La aplicación PaddleStats con el programa y los resultados de piragüismo.","pt-BR":"Aplicativo PaddleStats com programação e resultados de canoagem."})[code]; t.artLabel = t.available; }
+
+const actionCopy = {
+ en: ['Open on the web', 'View on the App Store', 'View on Google Play', 'Scan to download'],
+ pl: ['Otwórz w PaddleStats', 'Zobacz w App Store', 'Zobacz w Google Play', 'Zeskanuj i pobierz'],
+ de: ['In PaddleStats öffnen', 'Im App Store ansehen', 'Bei Google Play ansehen', 'Scannen und herunterladen'],
+ hu: ['Megnyitás a PaddleStatsban', 'Megtekintés az App Store-ban', 'Megtekintés a Google Playen', 'Olvasd be és töltsd le'],
+ es: ['Abrir en PaddleStats', 'Ver en el App Store', 'Ver en Google Play', 'Escanea para descargar'],
+ 'pt-BR': ['Abrir no PaddleStats', 'Ver na App Store', 'Ver no Google Play', 'Escaneie para baixar']
+};
+for (const [code, v] of Object.entries(actionCopy)) Object.assign(searchMessages[code], { openWeb:v[0], openIos:v[1], openAndroid:v[2], qr:v[3] });
