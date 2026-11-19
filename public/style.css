@@ -12,3 +12,18 @@
 @media(max-width:350px){.page{padding:0 16px}.identity{font-size:20px;gap:7px}.identity img{width:24px;height:29px}.header{height:64px;gap:6px}.stores{gap:8px}.search-trigger{gap:8px}}
 @media(max-width:599px) and (max-height:450px){.header{height:48px}.hero{padding:12px 0;gap:16px}.available{display:none}.search-dialog{max-height:100dvh}.search-hint,.dialog-footer{display:none}.search-results{max-height:35dvh}}
 .search-dialog[open]{display:flex;flex-direction:column}.dialog-header,.dialog-footer{flex:none}.search-dialog .search-area{min-height:0;display:flex;flex-direction:column;flex:1;overflow:hidden}.search-dialog form{display:flex;flex-direction:column;min-height:0}.search-results{min-height:0;flex:1 1 auto}.search-shell,.search-options,.search-hint,.search-status{flex:none}
+/* Mobile: search above the app preview and a vertical download column. */
+@media(max-width:599px){
+ .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:"search search" "phone download";align-items:center;align-content:center;column-gap:18px;row-gap:24px;padding:18px 0}
+ .search-launch{grid-area:search;width:100%}
+ .art{display:flex;grid-area:phone;padding:0;align-self:center;overflow:visible}
+ .phone{width:min(43vw,calc((100dvh - 270px)*.43),190px);border-width:4px;border-radius:25px;transform:rotate(-3deg);box-shadow:6px 12px 25px #27221a1c}
+ .phone img{border-radius:20px}.phone-island{top:6px;height:10px}.phone-halo{width:130%;top:10%}.art figcaption{display:none}
+ .download{grid-area:download;align-self:center;max-width:100%;margin:0}
+ .stores{display:flex;flex-direction:column;align-items:center;gap:12px}.stores a{width:100%;justify-content:center;min-height:42px;max-width:100%}.stores img.apple{width:129px;height:auto;max-width:100%;max-height:43px}.stores img.google{width:150px;height:auto;max-width:calc(100% + 8px);max-height:58px;margin:-7px -4px}
+ .available{display:flex;justify-content:center;font-size:9px;text-align:center;line-height:1.5;margin-top:14px}
+ .footer{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;flex:none;height:auto;min-height:68px;padding:11px 0 max(11px,env(safe-area-inset-bottom));gap:7px;font-size:10px;line-height:1.4}
+ .footer-links{display:flex;justify-content:space-between;gap:10px;width:100%;align-items:flex-start}.footer-links a:first-child{max-width:78%}
+}
+@media(max-width:350px){.hero{gap:18px 14px}.stores{gap:10px}.stores img.apple{max-height:37px}.stores img.google{max-height:50px}.footer{font-size:9px;min-height:62px}.available{font-size:8px}}
+@media(max-width:599px) and (max-height:500px){.hero{padding:10px 0;row-gap:14px}.footer{min-height:54px;padding:8px 0;font-size:9px;gap:5px}.available{display:none}.phone{width:min(36vw,calc((100dvh - 230px)*.43))}.search-label{font-size:12px;margin-bottom:7px}.trigger-arrow{height:38px;width:38px}.stores{gap:8px}.stores a{min-height:36px}.stores img.apple{max-height:34px}.stores img.google{max-height:46px}}

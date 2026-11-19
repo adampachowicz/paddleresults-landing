@@ -13,7 +13,7 @@ npm run build
 npm run dev
 ```
 
-Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). All viewports use a `100dvh` page (with `100svh` fallback), with no document scroll. Desktop typography, phone and QR sizes follow available height; compact viewports omit secondary marketing content. Mobile shows the brand/language header, search trigger and two store buttons. Search opens a native modal dialog; results scroll inside it. Escape, close button and backdrop dismiss it, and native dialog focus containment keeps keyboard navigation inside. The phone picture source avoids downloading a screenshot on mobile.
+Open http://localhost:4174/pl/ (English at `/`; also `/de/`, `/hu/`, `/es/`, `/pt-BR/`). All viewports use a `100dvh` page (with `100svh` fallback), with no document scroll. Desktop typography, phone and QR sizes follow available height; compact viewports omit secondary marketing content. Mobile shows the brand/language header, search trigger, a real localized phone screenshot beside vertically stacked store buttons, and the footer links. Search opens a native modal dialog; results scroll inside it. Escape, close button and backdrop dismiss it, and native dialog focus containment keeps keyboard navigation inside. The phone scales with both viewport width and available height.
 
 ## Hosting on GitHub Pages
 
