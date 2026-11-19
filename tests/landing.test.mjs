@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, access } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { locales } from '../src/locales.mjs';
+import { locales, searchMessages } from '../src/locales.mjs';
 import { storeLinks, campaign } from '../src/links.mjs';
 
 const built = spawnSync(process.execPath, ['scripts/build.mjs'], { env: { ...process.env, SITE_URL:'https://adampachowicz.github.io/paddleresults-landing/', INDEXABLE:'false' }, encoding:'utf8' });
@@ -15,6 +15,9 @@ for (const [code, copy] of Object.entries(locales)) {
     assert.ok(html.includes(copy.first));
     assert.ok(html.includes(copy.second));
     assert.ok(html.includes(copy.searchHint));
+    assert.ok(html.includes('id="search-scope" type="hidden" value="all"'));
+    assert.ok(html.includes(searchMessages[code].best));
+    assert.equal((html.match(/data-discipline=/g)||[]).length,7);
     assert.ok(html.includes('noindex,follow'));
     const canonical = `https://adampachowicz.github.io/paddleresults-landing/${code === 'en' ? '' : `${code}/`}`;
     assert.ok(html.includes(`<link rel="canonical" href="${canonical}">`));

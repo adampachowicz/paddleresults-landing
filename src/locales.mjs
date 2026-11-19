@@ -112,3 +112,14 @@ for (const [code, value] of Object.entries({en:"Close search",pl:"Zamknij wyszuk
 for (const t of Object.values(locales)) t.title = t.title.replace(/\| PaddleResults.*$/, "| PaddleResults");
 
 for (const [code, value] of Object.entries({en:"Local search test · sample directory",pl:"Lokalny test wyszukiwania · przykładowy katalog",de:"Lokaler Suchtest · Beispielverzeichnis",hu:"Helyi keresési teszt · mintakatalógus",es:"Prueba local de búsqueda · directorio de ejemplo","pt-BR":"Teste local de busca · diretório de exemplo"})) searchMessages[code].demo = value;
+
+const discoveryCopy = {
+ en:['Best matches','All disciplines','Competition','Athlete','races','matches','athletes','countries','Some results could not be loaded.',['Sprint & marathon','Slalom','Canoe polo','SUP','Ocean racing','Dragon boat']],
+ pl:['Najlepsze dopasowania','Wszystkie dyscypliny','Zawody','Zawodnik','wyścigów','meczów','zawodników','krajów','Nie udało się wczytać części wyników.',['Sprint i maraton','Slalom','Kajak polo','SUP','Ocean racing','Smocze łodzie']],
+ de:['Beste Treffer','Alle Disziplinen','Wettkampf','Athlet','Rennen','Spiele','Athleten','Länder','Einige Ergebnisse konnten nicht geladen werden.',['Sprint & Marathon','Slalom','Kanupolo','SUP','Ocean Racing','Drachenboot']],
+ hu:['Legjobb találatok','Minden szakág','Verseny','Sportoló','futam','mérkőzés','sportoló','ország','Egyes találatok nem tölthetők be.',['Sprint és maraton','Szlalom','Kajakpóló','SUP','Ocean racing','Sárkányhajó']],
+ es:['Mejores coincidencias','Todas las disciplinas','Competición','Deportista','carreras','partidos','deportistas','países','No se pudieron cargar algunos resultados.',['Sprint y maratón','Eslalon','Kayak polo','SUP','Ocean racing','Barco dragón']],
+ 'pt-BR':['Melhores resultados','Todas as modalidades','Competição','Atleta','provas','partidas','atletas','países','Não foi possível carregar parte dos resultados.',['Velocidade e maratona','Slalom','Caiaque polo','SUP','Ocean racing','Barco-dragão']],
+};
+for (const [code,v] of Object.entries(discoveryCopy)) Object.assign(searchMessages[code],Object.fromEntries(['best','allDisciplines','eventType','athleteType','races','matches','athleteCount','countryCount','partial','disciplines'].map((key,i)=>[key,v[i]])));
+export const disciplineKeys = ['canoe-sprint','canoe-slalom','canoe-polo','sup','ocean-racing','dragon-boat'];
