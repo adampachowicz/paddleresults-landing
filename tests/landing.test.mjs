@@ -70,3 +70,19 @@ test('sitemap lists six canonical pages with reciprocal alternatives', async () 
   const notFound = await readFile('dist/404.html', 'utf8');
   assert.ok(notFound.includes('noindex'));
 });
+
+test('GA4 build enables only a validated configured production tag and matching CSP', async()=>{
+ const build=overrides=>spawnSync(process.execPath,['scripts/build.mjs'],{env:{...process.env,SITE_URL:'https://paddleresults.com/',LOCAL_SEARCH_DEMO:'false',INDEXABLE:'true',GA_MEASUREMENT_ID:'G-TEST12345',...overrides},encoding:'utf8'});
+ assert.equal(build({}).status,0);
+ const html=await readFile('dist/index.html','utf8');
+ assert.ok(html.includes('name="ga-measurement-id" content="G-TEST12345"'));
+ assert.ok(html.includes('src="/analytics.mjs"'));
+ assert.ok(html.includes("script-src 'self' https://www.googletagmanager.com"));
+ await access('dist/analytics.mjs');await access('dist/analytics.css');
+ assert.ok(!html.includes('gtag/js?id='),'Google script must be consent loaded, not preloaded in HTML');
+ assert.equal(build({GA_MEASUREMENT_ID:'G-INVALID<script>'}).status,1);
+ for(const overrides of [{INDEXABLE:'false'},{GA_MEASUREMENT_ID:''},{LOCAL_SEARCH_DEMO:'true'}]){
+  assert.equal(build(overrides).status,0);
+  assert.ok(!(await readFile('dist/index.html','utf8')).includes('name="ga-measurement-id"'));
+ }
+});
