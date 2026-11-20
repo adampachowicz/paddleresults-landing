@@ -73,6 +73,7 @@ async function search() {
     const selected = data;
     if (selected.error) { status.textContent = selected.error === 429 ? t.limited : t.error; return; }
     const hits = selected.hits;
+    document.dispatchEvent(new CustomEvent('directory:search',{detail:{scope:scope.value,discipline,count:selected.total?.value ?? hits.length}}));
     const total = selected.total;
     status.textContent = hits.length ? `${t.results}: ${total ? `${total.estimated ? '≈' : ''}${new Intl.NumberFormat(locale).format(total.value)}` : hits.length}` : t.empty;
     for (const hit of hits) {

@@ -17,6 +17,11 @@ if (searchApi && searchApi !== '/__search' && !/^https:\/\//.test(searchApi)) th
 const searchOrigin = searchApi && searchApi !== '/__search' ? new URL(searchApi).origin : '';
 const localSearchDemo = process.env.LOCAL_SEARCH_DEMO === 'true';
 const indexable = process.env.INDEXABLE === 'true';
+const gaId = process.env.GA_MEASUREMENT_ID || '';
+if (gaId && !/^G-[A-Z0-9]+$/.test(gaId)) throw new Error('Invalid GA_MEASUREMENT_ID');
+const analyticsEnabled = Boolean(gaId && indexable && !localSearchDemo);
+const googleScript = analyticsEnabled ? ' https://www.googletagmanager.com' : '';
+const googleConnect = analyticsEnabled ? ' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com' : '';
 const esc = s => String(s).replace(/[&<>"']/g, x => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[x]);
 const pageUrl = code => new URL(code === 'en' ? './' : `${code}/`, site).href;
 const asset = file => `${base}${file}`;
@@ -61,7 +66,7 @@ for (const [code, t] of Object.entries(locales)) {
 <title>${esc(t.title)}</title><meta name="description" content="${esc(t.description)}">
 <meta name="robots" content="${indexable ? 'index,follow,max-image-preview:large' : 'noindex,follow'}">
 <meta name="theme-color" content="#f5f3ef"><meta name="referrer" content="strict-origin-when-cross-origin">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; font-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' ${searchOrigin}; form-action https://paddlestats.eu; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'${analyticsEnabled ? ' https://*.google-analytics.com' : ''}; font-src 'self'; script-src 'self'${googleScript}; style-src 'self'; connect-src 'self' ${searchOrigin}${googleConnect}; form-action https://paddlestats.eu; base-uri 'none'; object-src 'none'">
 <link rel="canonical" href="${esc(canonical)}">${alternates}<link rel="alternate" hreflang="x-default" href="${esc(pageUrl('en'))}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="PaddleResults"><meta property="og:locale" content="${t.ogLocale}">
 ${Object.values(locales).filter(l => l !== t).map(l => `<meta property="og:locale:alternate" content="${l.ogLocale}">`).join('')}
@@ -70,6 +75,7 @@ ${Object.values(locales).filter(l => l !== t).map(l => `<meta property="og:local
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(t.title)}"><meta name="twitter:description" content="${esc(t.description)}"><meta name="twitter:image" content="${esc(ogImage)}"><meta name="twitter:image:alt" content="${esc(t.artAlt)}">
 <meta name="apple-itunes-app" content="app-id=6822209038, affiliate-data=pt=128893100&amp;ct=paddleresults_v1_${code.replace('-', '')}">
 <link rel="icon" type="image/svg+xml" href="${asset('assets/favicon.svg')}"><link rel="stylesheet" href="${asset('style.css')}"><link rel="stylesheet" href="${asset('search.css')}">
+${analyticsEnabled ? `<meta name="ga-measurement-id" content="${gaId}"><link rel="stylesheet" href="${asset('analytics.css')}"><script type="module" src="${asset('analytics.mjs')}"></script>` : ''}
 <link rel="preload" as="font" href="${asset('assets/InterVariable.woff2')}" type="font/woff2" crossorigin>
 <script type="application/ld+json">${JSON.stringify(schema).replace(/</g, '\\u003c')}</script>
 <script type="module" src="${asset('site.js')}"></script>

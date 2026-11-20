@@ -42,7 +42,7 @@ Both store links include:
 
 Apple also receives `pt=128893100`, `ct=paddleresults_v1_<locale>`, and `mt=8`, following PaddleStats' existing provider configuration. Google Play gets the same campaign in its encoded `referrer` payload as well as listing UTM fields. The application IDs are copied from the current PaddleStats store configuration: iOS `6822209038`; Android `eu.paddlestats.app`.
 
-**A tagged link is not a measured installation or click counter.** Verify campaigns in App Store Connect / Play Console, subject to their attribution windows and reporting thresholds. Install Referrer requires the receiving Android app/analytics to read it for app-level reporting. This landing installs no analytics SDK and creates no cookies. It does not claim campaign reports have been verified.
+**A tagged link is not a measured installation or click counter.** Verify campaigns in App Store Connect / Play Console, subject to their attribution windows and reporting thresholds. Install Referrer requires the receiving Android app/analytics to read it for app-level reporting. GA4 is optional and starts only after consent when GA_MEASUREMENT_ID is configured. Campaign reports have not yet been verified.
 
 ## Live directory API — activation required
 
@@ -101,3 +101,21 @@ Research informing the layout:
 Validation: frontend tests cover search contracts, all six locale builds, stylesheet asset existence, destinations and viewport calculations. Full visual acceptance remains pending: the computer-use session timed out and Safari access was unavailable. No real iPhone keyboard validation is claimed.
 
 Manual acceptance checklist before marking the layout verified: 320/393/700px widths without a keyboard; 1440×900 desktop; short landscape viewport; real iOS Safari with keyboard shown/hidden, scrolling to the last hit, filter changes and close/reopen; desktop browser narrowed to 393px. Check long German labels, empty/loading/error states, one and six matches, keyboard focus visibility and 200% zoom.
+
+
+## Google Analytics 4
+
+Create a dedicated **Web data stream for https://paddleresults.com** in GA4 (Admin → Data streams → Web), then save its public `G-…` measurement ID as the GitHub repository Actions variable `GA_MEASUREMENT_ID`. A new Pages build is needed. No service-account key, API secret or OAuth grant is needed to collect client-side traffic. Measurement is disabled in noindex and local demo builds, and at localhost/127.0.0.1.
+
+The six-language consent choice blocks the Google tag entirely until acceptance (basic consent behavior, no pre-consent Google requests). Advertising storage, ad user data, personalization and Google Signals remain disabled. Preference persists for 180 days and can be changed with the footer settings button; decline disables subsequent collection and removes this site's prefixed GA cookies. Blocked localStorage falls back to a per-page choice.
+
+Measured after consent:
+
+- `page_view`: visits/pages, sessions, device and region reports; URL parameters and full referrer paths are excluded from the configured page URL/referrer.
+- `app_store_click`: destination `ios`/`android`, placement `hero`/`qr`/`search`, language. This is a store click, **not an installation**. Scanning the QR with an external camera is not a click on the desktop page.
+- `paddlestats_click`: outbound navigation to the core website, with placement/language.
+- `directory_search`: successful search response, scope, discipline and result_count. Raw search text, names and full destination URLs are not sent by custom events.
+
+Add event-scoped custom dimensions for `placement`, `destination`, `language`, `search_scope`, `discipline` and a custom metric for `result_count` if needed in reports. Use one chosen store-click event as a key event. Disable enhanced automatic site-search/outbound-click measurement in the stream if duplicate or URL-bearing automatic events are unwanted.
+
+Verification after deployment: decline → no gtag/collect requests; accept → Google tag loads and one page_view; search and store click → matching events in GA4 Realtime/DebugView; revoke → further events blocked. Standard reports can lag. Reporting covers consenting visitors whose browsers permit the tag; it is not a complete server visit counter. Data receipt in GA4 is pending until the actual measurement ID is provided, deployed and checked.
