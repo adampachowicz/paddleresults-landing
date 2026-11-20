@@ -23,6 +23,9 @@ for (const [code, copy] of Object.entries(locales)) {
     assert.ok(html.includes(`<link rel="canonical" href="${canonical}">`));
     assert.equal((html.match(/<link rel="alternate" hreflang=/g) || []).length, 7);
     assert.ok(html.includes('href="/paddleresults-landing/style.css"'));
+    for (const match of html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)) {
+      await access(`dist/${match[1].replace('/paddleresults-landing/', '')}`);
+    }
     const json = JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
     assert.equal(json['@graph'].find(x => x['@type'] === 'WebPage').inLanguage, code);
     assert.equal(json['@graph'].find(x => x['@type'] === 'SoftwareApplication').name, 'PaddleStats');

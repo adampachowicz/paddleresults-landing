@@ -84,3 +84,20 @@ Language and brand navigation use same-origin paths, including the GitHub Pages 
 For this review the localhost preview may be built with `SEARCH_API_URL=/__search`, a dedicated local search-only key and `LOCAL_SEARCH_DEMO=true`. The banner explicitly labels the five-record test directory. The dev server forwards only `q` and `scope` to the fixed loopback `SEARCH_PROXY_TARGET`; this proxy is not shipped as a GitHub Pages backend and refuses non-loopback targets. Production still requires the reviewed shared/API/admin deployment and its own restricted key.
 
 Verified test queries: `fuksa`, `zwolinska` (Athletes), `marathon` (Competitions), plus an absent term. Responses travel through the real local Meilisearch → Laravel endpoint → localhost proxy. This is not a test against the production catalogue. Only “Powered by PaddleStats” remains in the footer, with an attributed link to the web app; no privacy/navigation footer links or “by PaddleStats” wordmark subtitle.
+
+
+## Responsive search layout (2026-11-20)
+
+Search styles live in `public/search.css`; the landing stylesheet does not override dialog geometry. At widths up to 700px or heights up to 500px the native dialog fills the visible viewport. Larger screens use a stable, bounded panel. Both layouts use the same flex chain: header → form controls → scrollable results → optional desktop footer. Results own vertical scrolling; filter rows scroll horizontally and never wrap into several rows. Typing hides examples and the introductory hint. A query with no matches retains its explicit empty message.
+
+`visualViewport.height` and `offsetTop` update the dialog bounds even without a keyboard. Keyboard detection only hides secondary text; it does not select a different scroll/layout implementation. The input stays at 16px and zoom remains enabled. Native dialog Escape/focus containment and the close button remain available.
+
+Research informing the layout:
+
+- [Algolia: replicating documentation search](https://www.algolia.com/blog/ux/replicating-the-algolia-documentation-search-with-autocomplete): full-screen detached search at small widths.
+- [Adobe React Spectrum: building a ComboBox](https://reactspectrum.blob.core.windows.net/reactspectrum/bca2e615f300d33dd79d112ff8850690d73b3c18/docs/blog/building-a-combobox.html): mobile tray, visible viewport sizing and scroll constraints.
+- [MDN VisualViewport](https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport): visible height and viewport offset are distinct from layout viewport dimensions.
+
+Validation: frontend tests cover search contracts, all six locale builds, stylesheet asset existence, destinations and viewport calculations. Full visual acceptance remains pending: the computer-use session timed out and Safari access was unavailable. No real iPhone keyboard validation is claimed.
+
+Manual acceptance checklist before marking the layout verified: 320/393/700px widths without a keyboard; 1440×900 desktop; short landscape viewport; real iOS Safari with keyboard shown/hidden, scrolling to the last hit, filter changes and close/reopen; desktop browser narrowed to 393px. Check long German labels, empty/loading/error states, one and six matches, keyboard focus visibility and 200% zoom.
