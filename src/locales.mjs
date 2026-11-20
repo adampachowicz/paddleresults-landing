@@ -123,3 +123,12 @@ const discoveryCopy = {
 };
 for (const [code,v] of Object.entries(discoveryCopy)) Object.assign(searchMessages[code],Object.fromEntries(['best','allDisciplines','eventType','athleteType','races','matches','athleteCount','countryCount','partial','disciplines'].map((key,i)=>[key,v[i]])));
 export const disciplineKeys = ['canoe-sprint','canoe-slalom','canoe-polo','sup','ocean-racing','dragon-boat'];
+const resultCopy={
+ en:['Latest placed result','Place','Final A','Final B','Final','Semi-final','Heat','Quarter-final','Team classification'],
+ pl:['Ostatni wynik z miejscem','Miejsce','Finał A','Finał B','Finał','Półfinał','Eliminacje','Ćwierćfinał','Klasyfikacja drużynowa'],
+ de:['Letztes platziertes Ergebnis','Platz','Finale A','Finale B','Finale','Halbfinale','Vorlauf','Viertelfinale','Teamwertung'],
+ hu:['Legutóbbi helyezés','Helyezés','A döntő','B döntő','Döntő','Elődöntő','Előfutam','Negyeddöntő','Csapatverseny'],
+ es:['Último resultado con puesto','Puesto','Final A','Final B','Final','Semifinal','Eliminatoria','Cuartos de final','Clasificación por equipos'],
+ 'pt-BR':['Último resultado com colocação','Colocação','Final A','Final B','Final','Semifinal','Eliminatória','Quartas de final','Classificação por equipes'],
+};
+for(const [code,v] of Object.entries(resultCopy)) Object.assign(searchMessages[code],{recentResults:v[0],place:v[1],resultPhases:{final_a:v[2],final_b:v[3],final:v[4],FNL:v[4],semifinal:v[5],semi_final:v[5],SFNL:v[5],heat:v[6],heats:v[6],HEAT:v[6],QFNL:v[7],team_classification:v[8]}});
