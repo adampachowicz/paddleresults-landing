@@ -1,5 +1,5 @@
 import { searchMessages, disciplineKeys } from './locales.mjs';
-import { searchDirectory, eventDetails, flagAsset, detectDevice, resultDestination, athleteName, recentDestination } from './search.mjs';
+import { searchDirectory, eventDetails, flagAsset, detectDevice, resultDestination, athleteName, recentDestination, recentResultSummary } from './search.mjs';
 import { storeLinks } from './links.mjs';
 import { searchViewport } from './viewport.mjs';
 const dialog = document.querySelector('#search-dialog');
@@ -99,13 +99,14 @@ async function search() {
       if (subtitle.textContent) copy.append(subtitle);
       const details = eventDetails(hit,locale,t);
       if (details.length) { const meta = document.createElement('div'); meta.className = 'hit-details'; meta.textContent = details.join(' · '); copy.append(meta); }
-      if (hit.type==='athlete' && Array.isArray(hit.recent_results) && hit.recent_results.length) {
+      if (hit.type==='athlete' && Array.isArray(hit.recent_results) && hit.recent_results.some(item=>recentResultSummary(item,t))) {
         const recent=document.createElement('div');recent.className='hit-recent';
         const label=document.createElement('div');label.className='hit-recent-label';label.textContent=t.recentResults;recent.append(label);
-        for (const item of hit.recent_results.slice(0,2)) {
-          if (typeof item.name!=='string') continue;
+        for (const item of hit.recent_results.filter(item=>recentResultSummary(item,t)).slice(0,1)) {
+          if (typeof item.name!=='string' || !recentResultSummary(item,t)) continue;
           const link=document.createElement('a');link.href=recentDestination(item,locale,device,stores);link.textContent=item.name;link.className='hit-recent-link';
           const itemRow=document.createElement('div');itemRow.className='hit-recent-item';itemRow.append(link);
+          const summary=document.createElement('div');summary.className='hit-result-summary';summary.textContent=recentResultSummary(item,t);itemRow.append(summary);
           const date=item.end_date || item.start_date;
           if (typeof date==='string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) { const time=document.createElement('time');time.dateTime=date;time.textContent=new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(`${date}T00:00:00Z`));itemRow.append(time); }
           else if (Number.isInteger(item.year)) { const year=document.createElement('span');year.className='hit-recent-year';year.textContent=String(item.year);itemRow.append(year); }

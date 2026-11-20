@@ -66,3 +66,11 @@ test('athlete headings use structured names and profile links rather than anothe
  assert.equal(recentDestination({name:'Cup',path:'/results/cup-2026'},'pl','ios',stores),stores.apple);
  const unsafe=new URL(resultDestination({type:'athlete',title:'Name',profile_path:'//evil.example'},'pl','web',stores));assert.equal(unsafe.origin,'https://paddlestats.eu');
 });
+
+test('one placed result keeps its phase and team context explicit', async()=>{
+ const {recentResultSummary}=await import('../public/search.mjs');
+ const t={place:'Miejsce',resultPhases:{heat:'Eliminacje',team_classification:'Klasyfikacja drużynowa'}};
+ assert.equal(recentResultSummary({position:2,boat_class:'K1',gender:'W',distance_meters:500,phase:'heat'},t),'Miejsce: 2 · K1 · W · 500 m · Eliminacje');
+ assert.equal(recentResultSummary({position:3,result_label:'Women',team_name:'Poland',phase:'team_classification'},t),'Miejsce: 3 · Women · Klasyfikacja drużynowa · Poland');
+ assert.equal(recentResultSummary({position:null},t),'');
+});

@@ -36,7 +36,7 @@ export const mockDirectory = {
 for (const person of mockDirectory.athletes) {
  person.profile_path=`/${person.discipline_groups.includes('canoe-slalom')?'canoe-slalom/athletes':'athletes'}/${person.id}`;
  person.birth_year=person.first_name==='Klaudia' ? 1998 : null;
- person.recent_results=mockDirectory.events.filter(event=>event.discipline_groups.some(group=>person.discipline_groups.includes(group))).slice(0,2).map(event=>({id:event.id,name:event.title,start_date:event.start_date,end_date:event.end_date,year:Number(event.start_date.slice(0,4)),path:`/results/${event.id}`}));
+ person.recent_results=mockDirectory.events.filter(event=>event.discipline_groups.some(group=>person.discipline_groups.includes(group))).slice(0,1).map(event=>({position:2,boat_class:'K1',gender:'W',phase:'final',id:event.id,name:event.title,start_date:event.start_date,end_date:event.end_date,year:Number(event.start_date.slice(0,4)),path:`/results/${event.id}`}));
 }
 const normalize = value => value.toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l').trim();
 export function mockSearch(query, scope = 'all', discipline = '') {

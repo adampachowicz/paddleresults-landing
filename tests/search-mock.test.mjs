@@ -30,5 +30,5 @@ test('discipline pill totals are counts for the whole query, even with another d
  assert.equal(response.total,1);assert.equal(response.discipline_total,8);
  assert.equal(response.discipline_counts['canoe-slalom'],1);assert.ok(response.discipline_counts['canoe-sprint']>1);
  const person=mockSearch('zwol','athletes').body.data.hits[0];
- assert.equal(person.birth_year,1998);assert.ok(person.profile_path.startsWith('/canoe-slalom/athletes/'));assert.ok(person.recent_results.length);
+ assert.equal(person.birth_year,1998);assert.ok(person.profile_path.startsWith('/canoe-slalom/athletes/'));assert.equal(person.recent_results.length,1);assert.equal(person.recent_results[0].position,2);
 });

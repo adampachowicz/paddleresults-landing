@@ -60,3 +60,9 @@ export function athleteName(hit,locale='en') {
 export function recentDestination(item,locale,device,stores) {
  return resultDestination({type:'event',title:item.name,profile_path:item.path},locale,device,stores);
 }
+
+export function recentResultSummary(item,t) {
+ if (!Number.isSafeInteger(item.position) || item.position<1) return '';
+ const phase = t.resultPhases?.[item.phase] || item.phase?.replaceAll('_',' ');
+ return [`${t.place}: ${item.position}`,item.result_label || [item.boat_class,item.gender,item.distance_meters ? `${item.distance_meters} m` : null,item.age_category].filter(Boolean).join(' · '),phase,item.team_name].filter(Boolean).join(' · ');
+}
