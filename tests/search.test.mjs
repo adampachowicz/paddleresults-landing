@@ -52,3 +52,17 @@ test('mixed search uses API totals and sends the discipline filter before previe
  assert.ok(details[0].includes('2026')); assert.ok(details.includes('0 meczów')); assert.ok(details.includes('100 zawodników')); assert.equal(details.length,3);
  assert.deepEqual(eventDetails({type:'event',races_count:null},'en',searchMessages.en),[]);
 });
+
+test('athlete headings use structured names and profile links rather than another search',async()=>{
+ const {athleteName,recentDestination} = await import('../public/search.mjs');
+ const {storeLinks}=await import('../src/links.mjs');
+ const {resultDestination}=await import('../public/search.mjs');
+ assert.equal(athleteName({first_name:'KLAUDIA',last_name:'ZWOLIŃSKA',title:'ignored'},'pl'),'Klaudia Zwolińska');
+ assert.equal(athleteName({first_name:'ANNA-MARIA',last_name:'O’NEILL'},'en'),'Anna-Maria O’Neill');
+ const stores=storeLinks('pl','search');
+ const profile=new URL(resultDestination({type:'athlete',title:'Klaudia',profile_path:'/canoe-slalom/athletes/klaudia-zwolinska'},'pl','web',stores));
+ assert.equal(profile.pathname,'/canoe-slalom/athletes/klaudia-zwolinska');assert.equal(profile.searchParams.has('q'),false);assert.equal(profile.searchParams.get('lang'),'pl');
+ const recent=new URL(recentDestination({name:'Cup',path:'/results/cup-2026'},'pl','web',stores));assert.equal(recent.pathname,'/results/cup-2026');assert.equal(recent.searchParams.get('utm_source'),'paddleresults.com');
+ assert.equal(recentDestination({name:'Cup',path:'/results/cup-2026'},'pl','ios',stores),stores.apple);
+ const unsafe=new URL(resultDestination({type:'athlete',title:'Name',profile_path:'//evil.example'},'pl','web',stores));assert.equal(unsafe.origin,'https://paddlestats.eu');
+});

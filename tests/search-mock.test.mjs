@@ -25,3 +25,10 @@ test('best matches find an athlete without manually switching away from competit
  assert.equal(mockSearch('ICF','all','canoe-polo').body.data.total,1);
  assert.equal(mockSearch('ICF','all','unknown').status,422);
 });
+test('discipline pill totals are counts for the whole query, even with another discipline selected',()=>{
+ const response=mockSearch('ICF','all','canoe-slalom').body.data;
+ assert.equal(response.total,1);assert.equal(response.discipline_total,8);
+ assert.equal(response.discipline_counts['canoe-slalom'],1);assert.ok(response.discipline_counts['canoe-sprint']>1);
+ const person=mockSearch('zwol','athletes').body.data.hits[0];
+ assert.equal(person.birth_year,1998);assert.ok(person.profile_path.startsWith('/canoe-slalom/athletes/'));assert.ok(person.recent_results.length);
+});

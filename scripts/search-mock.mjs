@@ -33,13 +33,21 @@ export const mockDirectory = {
   results_count:20+i,athletes_count:40+i,countries_count:5+i,
   results_unit:eventDisciplines[i]==='canoe-polo' ? 'matches' : eventDisciplines[i]==='slalom' ? 'runs' : 'boat_results'})),
 };
+for (const person of mockDirectory.athletes) {
+ person.profile_path=`/${person.discipline_groups.includes('canoe-slalom')?'canoe-slalom/athletes':'athletes'}/${person.id}`;
+ person.birth_year=person.first_name==='Klaudia' ? 1998 : null;
+ person.recent_results=mockDirectory.events.filter(event=>event.discipline_groups.some(group=>person.discipline_groups.includes(group))).slice(0,2).map(event=>({id:event.id,name:event.title,start_date:event.start_date,end_date:event.end_date,year:Number(event.start_date.slice(0,4)),path:`/results/${event.id}`}));
+}
 const normalize = value => value.toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/ł/g,'l').trim();
 export function mockSearch(query, scope = 'all', discipline = '') {
  if (!['all','events','athletes'].includes(scope) || (discipline && !['canoe-sprint','canoe-slalom','canoe-polo','sup','ocean-racing','dragon-boat'].includes(discipline)) || [...query.trim()].length < 2 || [...query.trim()].length > 80) return {status:422,body:{message:'Invalid search query, scope or discipline.'}};
  const tokens = normalize(query).split(/\s+/);
- const byScope = Object.fromEntries(['events','athletes'].map(key=>[key,mockDirectory[key].filter(hit=>(!discipline || hit.discipline_groups.includes(discipline)) && tokens.every(token=>normalize(`${hit.title} ${hit.subtitle}`).includes(token)))]));
+ const unfiltered = Object.fromEntries(['events','athletes'].map(key=>[key,mockDirectory[key].filter(hit=>tokens.every(token=>normalize(`${hit.title} ${hit.subtitle}`).includes(token)))]));
+ const byScope=Object.fromEntries(Object.entries(unfiltered).map(([key,hits])=>[key,hits.filter(hit=>!discipline || hit.discipline_groups.includes(discipline))]));
+ const allScope=scope==='all' ? [...unfiltered.events,...unfiltered.athletes] : unfiltered[scope];
+ const discipline_counts=Object.fromEntries(['canoe-sprint','canoe-slalom','canoe-polo','sup','ocean-racing','dragon-boat'].map(group=>[group,allScope.filter(hit=>hit.discipline_groups.includes(group)).length]));
  const totals = {events:byScope.events.length,athletes:byScope.athletes.length}; totals.all = totals.events+totals.athletes;
  const candidates = scope==='all' ? [...byScope.events,...byScope.athletes] : byScope[scope];
  const hits = candidates.map(hit=>({...hit,relevance:normalize(hit.title)===normalize(query)?1:normalize(hit.title).startsWith(normalize(query))?.95:.8})).sort((a,b)=>b.relevance-a.relevance).slice(0,6);
- return {status:200,body:{data:{hits,total:totals[scope],totals,total_is_estimate:false}}};
+ return {status:200,body:{data:{hits,total:totals[scope],totals,discipline_counts,discipline_total:allScope.length,total_is_estimate:false}}};
 }

@@ -123,3 +123,4 @@ const discoveryCopy = {
 };
 for (const [code,v] of Object.entries(discoveryCopy)) Object.assign(searchMessages[code],Object.fromEntries(['best','allDisciplines','eventType','athleteType','races','matches','athleteCount','countryCount','partial','disciplines'].map((key,i)=>[key,v[i]])));
 export const disciplineKeys = ['canoe-sprint','canoe-slalom','canoe-polo','sup','ocean-racing','dragon-boat'];
+for (const [code,label] of Object.entries({en:'Recent results',pl:'Ostatnie wyniki',de:'Letzte Ergebnisse',hu:'Legutóbbi eredmények',es:'Resultados recientes','pt-BR':'Resultados recentes'})) searchMessages[code].recentResults=label;
