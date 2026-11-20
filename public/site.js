@@ -51,7 +51,7 @@ function updateDisciplineCounts(data) {
  }
 }
 function clear() { results.replaceChildren(); results.hidden = true; }
-function invalidate() { generation++; controller?.abort(); clearTimeout(timer); clear(); updateCounts(null); updateDisciplineCounts(null); status.textContent = ''; }
+function invalidate() { dialog.dataset.query = String(field.value.trim().length > 0); generation++; controller?.abort(); clearTimeout(timer); clear(); updateCounts(null); updateDisciplineCounts(null); status.textContent = ''; }
 async function search() {
   invalidate();
   const current = generation;
@@ -126,6 +126,7 @@ async function search() {
 }
 function openSearch() {
   viewportReference = window.innerHeight;
+  dialog.dataset.query = String(field.value.trim().length > 0);
   if (!dialog.open) dialog.showModal();
   field.focus({preventScroll:true});
   syncViewport();

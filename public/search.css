@@ -1,0 +1,91 @@
+/* One layout for the dialog, independent of whether a software keyboard exists. */
+.search-dialog {
+  --search-gap: clamp(12px, 5dvh, 48px);
+  position: fixed;
+  inset: calc(var(--search-viewport-top, 0px) + var(--search-gap)) 0 auto;
+  margin: 0 auto;
+  padding: 0;
+  width: min(720px, calc(100% - 40px));
+  max-width: none;
+  height: min(720px, calc(var(--search-viewport-height, 100dvh) - 2 * var(--search-gap)));
+  max-height: none;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fffdf9;
+  color: #181816;
+  box-shadow: 0 24px 90px #0003;
+}
+.search-dialog[open] { display: flex; flex-direction: column; }
+.search-dialog::backdrop { background: #18181666; backdrop-filter: blur(5px); }
+.dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: none; padding: 16px 20px 12px; }
+.dialog-header h2 { margin: 0; font-size: 16px; line-height: 1.35; font-weight: 700; }
+.close-search { flex: none; width: 44px; height: 44px; border: 0; border-radius: 50%; background: #efede8; color: #64615b; font-size: 28px; line-height: 1; }
+.search-dialog .search-area, #search-form { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
+.search-area { padding: 0 20px; }
+.search-shell { display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 12px; flex: none; border: 1px solid #c9c4ba; border-radius: 12px; background: #f5f3ef; }
+.search-shell:focus-within { border-color: #8b877f; }
+.search-shell > svg { width: 20px; flex: none; color: var(--muted); }
+.search-shell input { width: 100%; min-width: 0; min-height: 44px; padding: 8px 0; border: 0; background: transparent; color: #181816; font-size: 16px; }
+.search-shell input:focus-visible { outline: none; }
+.search-shell button { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 0; border-radius: 9px; background: #e8e5df; }
+.search-options { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: none; min-width: 0; margin: 10px 0 8px; }
+.scope-tabs, .discipline-tabs { display: flex; flex: none; flex-wrap: nowrap; align-items: center; gap: 6px; min-width: 0; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.scope-tabs button, .discipline-tabs button { flex: none; white-space: nowrap; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); line-height: 1.3; }
+.scope-tabs button { min-height: 40px; padding: 8px 12px; font-size: 12px; }
+.scope-tabs button[aria-pressed=true] { background: #181816; border-color: #181816; color: white; }
+.discipline-tabs { margin-bottom: 6px; padding-bottom: 4px; }
+.discipline-tabs button { min-height: 36px; padding: 7px 10px; font-size: 11px; }
+.discipline-tabs button[aria-pressed=true] { background: #eae7e0; color: #181816; border-color: #aaa59b; }
+.scope-count { display: inline-block; margin-left: 4px; font-size: 10px; font-variant-numeric: tabular-nums; opacity: .75; }
+.scope-count[hidden] { display: none; }
+.suggestions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 10px; color: var(--muted); }
+.suggestions button { min-height: 32px; padding: 4px 0; border: 0; border-bottom: 1px solid #c7c2b9; background: transparent; font-size: 10px; }
+.search-dialog[data-query=true] .suggestions, .search-dialog[data-query=true] .search-hint { display: none; }
+.search-hint, .search-status { flex: none; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.search-hint { padding: 12px 0; }
+.search-status:not(:empty) { padding: 6px 0 8px; }
+.search-results { flex: 1; min-height: 0; margin: 0; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.search-results[hidden] { display: none; }
+.search-hit { display: flex; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.hit-copy { flex: 1; min-width: 0; }
+.hit-heading { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.hit-title { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.5; }
+.hit-title:hover { text-decoration: underline; }
+.hit-flag { display: inline-block; width: 20px; height: 15px; object-fit: cover; margin-right: 7px; vertical-align: -2px; border-radius: 2px; box-shadow: 0 0 0 1px #18181612; }
+.hit-birth, .hit-subtitle { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.hit-subtitle { margin-top: 4px; }
+.hit-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.hit-badges:empty { display: none; }
+.hit-discipline { font-size: 10px; line-height: 1.4; padding: 3px 7px; border: 1px solid var(--line); border-radius: 999px; color: #58554f; background: #f4f1ec; }
+.hit-details { margin-top: 6px; font-size: 11px; line-height: 1.5; color: var(--muted); }
+.hit-recent { margin-top: 9px; font-size: 11px; line-height: 1.5; }
+.hit-recent-label, .hit-result-summary { color: var(--muted); }
+.hit-recent-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; margin-top: 3px; }
+.hit-recent-link { text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.hit-result-summary { grid-column: 1 / -1; grid-row: 2; }
+.hit-recent-item time, .hit-recent-year { grid-column: 2; grid-row: 1; font-size: 10px; white-space: nowrap; color: var(--muted); }
+.dialog-footer { display: flex; gap: 7px; align-items: center; flex: none; padding: 12px 20px; color: var(--muted); font-size: 10px; border-top: 1px solid var(--line); }
+.dialog-footer kbd { padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; }
+/* Small browser windows use the same full-screen view as phones, without UA detection. */
+@media (max-width: 700px), (max-height: 500px) {
+  .search-dialog { --search-gap: 0px; width: 100%; height: var(--search-viewport-height, 100dvh); border: 0; border-radius: 0; box-shadow: none; }
+  .dialog-header { padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left)); }
+  .dialog-header h2 { font-size: 15px; }
+  .search-area { padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
+  .search-options { display: block; }
+  .scope-tabs { width: 100%; }
+  .suggestions, .dialog-footer { display: none; }
+  .search-hint { font-size: 12px; }
+  .search-dialog[data-query=true] .search-status { font-size: 11px; }
+  .hit-recent-item { grid-template-columns: minmax(0, 1fr); }
+  .hit-recent-item time, .hit-recent-year { grid-column: 1; grid-row: 3; }
+}
+/* Less chrome in the remaining space above a keyboard, without changing scroll ownership. */
+.search-dialog[data-keyboard=true] .dialog-footer, .search-dialog[data-keyboard=true] .suggestions, .search-dialog[data-keyboard=true] .search-hint { display: none; }
+@media (max-height: 420px) {
+  .dialog-header { padding-top: 4px; padding-bottom: 4px; }
+  .search-options { margin-top: 6px; margin-bottom: 4px; }
+  .scope-tabs button { min-height: 36px; padding-top: 6px; padding-bottom: 6px; }
+  .search-hint { display: none; }
+}
